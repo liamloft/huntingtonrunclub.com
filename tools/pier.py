@@ -26,7 +26,7 @@ def line(x1, y1, x2, y2, a=0.7, step=140):
                        x1 + (x2 - x1) * t1, y1 + (y2 - y1) * t1, a))
     return " ".join(out)
 
-main, light, pil, pil_l = [], [], [], []
+main, light, pil, pil_l, brace = [], [], [], [], []
 
 # deck
 for y in (78, 86):
@@ -49,8 +49,8 @@ for i, x in enumerate(xs):
     pil.append(seg(x, 87, x + j(1.5), 190, 0.8))
     pil_l.append(seg(x + 4, 87, x + 4 + j(1.5), 190, 0.8))
     if i < len(xs) - 1 and i % 2 == 0:
-        pil_l.append(seg(x + 4, 92, x + 44, 118, 0.6))
-        pil_l.append(seg(x + 44, 92, x + 4, 118, 0.6))
+        brace.append(seg(x + 4, 92, x + 44, 118, 0.6))
+        brace.append(seg(x + 44, 92, x + 4, 118, 0.6))
 # lamp posts
 lamps = []
 for x in (190, 400, 610):
@@ -88,9 +88,9 @@ def path(d, cls):
     return f'<path class="{cls}" d="{" ".join(d)}"/>'
 
 svg = f'''<svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of the Huntington Beach pier with the merch shop at the end">
-<defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff"/><stop offset=".38" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".07" stop-color="#fff"/><stop offset=".11" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <mask id="pilMask" maskUnits="userSpaceOnUse" x="0" y="80" width="1000" height="110"><rect x="0" y="80" width="1000" height="110" fill="url(#sub)"/></mask></defs>
-<g mask="url(#pilMask)">{path(pil, "ink")}{path(pil_l, "ink-l")}</g>
+<g mask="url(#pilMask)">{path(pil, "ink")}{path(pil_l, "ink-l")}</g>{path(brace, "ink-l")}
 {path(main, "ink")}{path(light, "ink-l")}
 {"".join(f'<circle cx="{x}" cy="31.5" r="2" class="acc-fill"/>' for x in lamps)}
 {"".join(f'<circle cx="{x}" cy="{y}" r="3" class="ink paper-fill"/>' for x, y in heads)}
