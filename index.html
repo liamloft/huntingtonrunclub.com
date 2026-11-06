@@ -518,7 +518,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
             Reserve now on Venmo</a>
           <button type="button" class="copy" id="copyBtn">copy the note instead</button>
         </div>
-        <p class="fine">On a phone this opens the Venmo app. On a laptop it opens venmo.com. If the note didn't carry over, paste it in. That's what the copy button is for.</p>
+        <p class="fine">On a phone this opens the Venmo app (or venmo.com if you don't have it). On a laptop it opens venmo.com. If the note didn't carry over, paste it in. That's what the copy button is for.</p>
       </aside>
     </div>
   </section>
@@ -676,6 +676,7 @@ $("#specVenmo").textContent = "@" + handle;
 $("#slipTo").textContent = "@" + handle;
 $("#venmoHandle").textContent = "@" + handle + " ↗";
 $("#venmoLink").href = "https://venmo.com/" + encodeURIComponent(handle);
+$("#venmoLink").addEventListener("click",e=>openVenmo(e,"venmo://paycharge?txn=pay&recipients="+encodeURIComponent(handle),"https://venmo.com/"+encodeURIComponent(handle)));
 $("#mailLink").href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("HRC Drop 02");
 $("#mailText").textContent = CONFIG.email;
 if(CONFIG.phone){ $("#telLink").href = "tel:" + CONFIG.phone.replace(/[^+\d]/g,""); $("#telText").textContent = fmtPhone(CONFIG.phone); }
@@ -715,6 +716,23 @@ function venmoUrl(note, qty){
   u += "&note=" + encodeURIComponent(note);
   return u;
 }
+// Phones: open the Venmo app directly. https://venmo.com links often land on the website instead of the app.
+const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function venmoAppUrl(note, qty){
+  let u="venmo://paycharge?txn=pay&recipients="+encodeURIComponent(handle)+"&audience=private";
+  if(CONFIG.price) u += "&amount=" + (CONFIG.price*qty).toFixed(2);
+  u += "&note=" + encodeURIComponent(note);
+  return u;
+}
+function openVenmo(e, appUrl, webUrl){
+  if(!isMobile) return;             // computers: the normal venmo.com link
+  e.preventDefault();
+  let left=false;
+  const onHide=()=>{ if(document.hidden){ left=true; clearTimeout(t); } };
+  document.addEventListener("visibilitychange",onHide);
+  const t=setTimeout(()=>{ document.removeEventListener("visibilitychange",onHide); if(!left) window.location.href=webUrl; },1800);
+  window.location.href=appUrl;      // app installed: it opens; not installed: we fall back to the website
+}
 function problems(){
   const p = {};
   if(!state.size) p["#fSize"] = "pick a size";
@@ -744,7 +762,9 @@ $("#venmoBtn").addEventListener("click",e=>{
     const first = $(keys[0]); const target = first.querySelector("input") || first.querySelector(".size");
     if(target) target.focus({preventScroll:true});
     first.scrollIntoView({behavior: reduce ? "auto":"smooth", block:"center"});
+    return;
   }
+  openVenmo(e, venmoAppUrl(noteText(), state.qty), venmoUrl(noteText(), state.qty));
 });
 $("#copyBtn").addEventListener("click",async e=>{
   const b=e.currentTarget, t=noteText();
@@ -757,6 +777,7 @@ $("#copyBtn").addEventListener("click",async e=>{
 });
 if(CONFIG.heroGoesStraightToVenmo){
   const h=$("#heroReserve"); h.href = venmoUrl("HRC Drop 02 | size: ? | full name | phone", 1); h.target="_blank"; h.rel="noopener";
+  h.addEventListener("click",e=>openVenmo(e, venmoAppUrl("HRC Drop 02 | size: ? | full name | phone",1), h.href));
 }
 render();
 
