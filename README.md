@@ -16,9 +16,8 @@ Huntington Run Club's site. First up: the Drop 02 merch pre-order page (made wit
 Edit the `CONFIG` block near the bottom of the page:
 
 - `venmoHandle`: the club's Venmo username
-- `price`: per-item price (null leaves the amount blank in Venmo)
-- `item`: name of the piece (null shows "revealed soon")
-- `sizes`, `email`, `phone`
+- `styles`: the two pieces (men's EasySet sleeveless, women's Align tank): name, sizes, `price` (null leaves the amount blank in Venmo), lululemon link, and `image` (mockup in `assets/`, see `assets/README.md`)
+- `email`, `phone`
 - `heroGoesStraightToVenmo`: true makes the hero button skip the order form
 
 ## Hosting

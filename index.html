@@ -189,6 +189,35 @@ h1 .u path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s .35s c
 .spec-row dt{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:3px}
 .spec-row dd{margin:0}
 .tbd{font-family:var(--mono);font-size:11px;color:var(--accent);border:1px dashed var(--accent-line);padding:1px 6px;border-radius:3px;margin-left:6px;white-space:nowrap}
+.pieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:64px}
+.piece{background:var(--card);border:1px solid var(--rule);border-radius:6px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s,border-color .25s;display:flex;flex-direction:column}
+.piece:hover{transform:translateY(-3px);border-color:var(--accent-line)}
+.piece:nth-child(1){transform:rotate(-.4deg)}.piece:nth-child(2){transform:rotate(.4deg)}
+.piece:nth-child(1):hover{transform:translateY(-3px) rotate(-.6deg)}.piece:nth-child(2):hover{transform:translateY(-3px) rotate(.6deg)}
+.render{position:relative;aspect-ratio:1/1;background-color:var(--paper-2);background-image:radial-gradient(var(--dot) 1px,transparent 1.3px);background-size:16px 16px;display:grid;place-items:center;border-bottom:1px solid var(--rule)}
+.render img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.render.has-img img{opacity:1}
+.render.has-img .sketch,.render.has-img .stamp{display:none}
+.render .sketch{width:50%;height:auto;color:var(--ink);overflow:visible}
+.render .sketch .ink{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.render .sketch .ink-l{fill:none;stroke:currentColor;stroke-width:1;opacity:.45;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.render .sketch .acc{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.render .sketch text{font-family:var(--mono);font-size:7px;letter-spacing:.14em;fill:var(--accent);font-weight:600}
+.render .stamp{position:absolute;top:18px;right:16px;--r:6deg}
+.render .fig-n{position:absolute;left:16px;bottom:12px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.piece-meta{padding:22px 24px 26px;display:flex;flex-direction:column;flex:1}
+.piece-meta .kind{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.piece-meta h3{font-size:clamp(21px,2.2vw,26px);letter-spacing:-.025em;margin:6px 0 10px;font-weight:640;line-height:1.15}
+.piece-meta p{margin:0 0 14px;color:var(--ink-2);font-size:15.5px}
+.facts{margin:0 0 4px;border-top:1px dashed var(--rule)}
+.facts div{display:grid;grid-template-columns:70px 1fr;gap:12px;padding:8px 0;border-bottom:1px dashed var(--rule);font-size:14px}
+.facts dt{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:2px}
+.facts dd{margin:0}
+.piece-actions{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:auto;padding-top:20px}
+.piece-actions .btn{padding:12px 18px;font-size:15px}
+.ext{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px;transition:color .2s,text-decoration-color .2s}
+.ext:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.size-hint{font-family:var(--mono);font-size:12.5px;color:var(--muted);padding:10px 0}
 .margin-q{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--accent);padding:4px 0 4px 14px;margin:28px 0 0;max-width:46ch}
 
 /* ---------- timeline ---------- */
@@ -327,6 +356,8 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   .qrow .s{justify-self:start;margin-top:6px}
   .about{grid-template-columns:1fr;gap:36px}
   .spec-row{grid-template-columns:96px 1fr}
+  .pieces{grid-template-columns:1fr;gap:22px;margin-top:44px}
+  .piece:nth-child(n),.piece:nth-child(n):hover{transform:none}
   .slip{transform:none}
 }
 @media (max-width:380px){ .brand .short{display:none} }
@@ -378,7 +409,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
     <h1 id="h1">We sold out once. Let's do it <span class="u">again.<svg viewBox="0 0 200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15C40 7 92 5 197 9C150 12 96 15 34 21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></span></h1>
 
     <div class="hero-row">
-      <p class="lede">Drop 02 is our second-ever Huntington Run Club merch drop, and this time we made it with <strong>lululemon</strong>. Pre-orders run all of November: pick your size, pay through Venmo, and we'll text you when it's ready to pick up.</p>
+      <p class="lede">Drop 02 is our second-ever Huntington Run Club merch drop, and this time we made it with <strong>lululemon</strong>. Pre-orders run all of November: pick your piece and size, pay through Venmo, and we'll text you when it's ready to pick up.</p>
       <div class="cta-zone">
         <div class="cta-row">
           <a class="btn" id="heroReserve" href="#reserve">Reserve now
@@ -448,7 +479,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
       <div>
         <p class="lede">Round two had to be better than a good shirt. So we teamed up with lululemon to make something you'll actually run in, not just wear to brunch after.</p>
         <p>It's pre-order only. We'll make what you order and nothing extra, so if you want one, November is the window. When orders close, we'll send the final size count to production and we wait (impatiently).</p>
-        <p class="margin-q">Full reveal of the piece is coming on Instagram. Follow along so you see it first.</p>
+        <p class="margin-q">Two pieces this time: a men's sleeveless and a women's tank, both lululemon, both with our print. Mockups below.</p>
       </div>
       <dl class="spec">
         <div class="spec-row"><dt>Made with</dt><dd>lululemon</dd></div>
@@ -460,6 +491,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
         <div class="spec-row"><dt>Pickup</dt><dd>At a club run in HB. We'll text you.</dd></div>
       </dl>
     </div>
+    <div class="pieces" id="pieces"></div>
   </section>
 
   <hr class="rule">
@@ -469,7 +501,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
     <div class="sec-head"><span class="sec-num">03</span><h2 data-ring>How the drop works</h2><span class="aside">four steps, no checkout pages</span></div>
     <div class="timeline">
       <svg class="wave" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true"><path d="M0 7 Q 12.5 0 25 7 T 50 7 T 75 7 T 100 7 T 125 7 T 150 7 T 175 7 T 200 7 T 225 7 T 250 7 T 275 7 T 300 7 T 325 7 T 350 7 T 375 7 T 400 7 T 425 7 T 450 7 T 475 7 T 500 7 T 525 7 T 550 7 T 575 7 T 600 7 T 625 7 T 650 7 T 675 7 T 700 7 T 725 7 T 750 7 T 775 7 T 800 7 T 825 7 T 850 7 T 875 7 T 900 7 T 925 7 T 950 7 T 975 7 T 1000 7" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>
-      <div class="step" data-step="1"><div class="dot"></div><div class="when">Nov 1 – 30</div><h3>Pick your size</h3><p>Choose your size and how many below. Put in your full name and phone number.</p></div>
+      <div class="step" data-step="1"><div class="dot"></div><div class="when">Nov 1 – 30</div><h3>Pick your piece</h3><p>Choose men's or women's, your size and how many below. Put in your full name and phone number.</p></div>
       <div class="step" data-step="2"><div class="dot"></div><div class="when">same minute</div><h3>Pay on Venmo</h3><p>The button opens Venmo with the club's account, the amount, and your order note already filled in. Just hit pay.</p></div>
       <div class="step" data-step="3"><div class="dot"></div><div class="when">Dec 1</div><h3>Orders lock</h3><p>We'll tally every size and send the final count to production with lululemon. No extras get made.</p></div>
       <div class="step" data-step="4"><div class="dot"></div><div class="when">when it lands</div><h3>We text you</h3><p>Once it's in, you get a text with pickup details. Grab it at a run, wear it to the next one.</p></div>
@@ -484,6 +516,11 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
     <div class="reserve">
       <form id="orderForm" novalidate>
         <p class="lede" style="margin-bottom:34px">Fill this in and the button writes your Venmo note for you, so we can match every payment to a name, a size and a number to text.</p>
+        <div class="field" id="fStyle">
+          <div class="lab"><span>Style</span><a href="#drop-details" class="muted" style="text-decoration:none">see them ↑</a></div>
+          <div class="sizes" role="radiogroup" aria-label="Style" id="styles"></div>
+          <div class="msg" aria-live="polite"></div>
+        </div>
         <div class="field" id="fSize">
           <div class="lab"><span>Size</span><a href="#faq" class="muted" style="text-decoration:none">sizing? →</a></div>
           <div class="sizes" role="radiogroup" aria-label="Size" id="sizes"></div>
@@ -545,7 +582,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
       <details><summary>Why pre-order instead of just selling them?</summary><p>So we make exactly what people want. No guessing sizes, no leftover boxes, and every piece already has an owner.</p></details>
       <details><summary>What if I forgot my name or phone in the Venmo note?</summary><p>No stress. DM us on Instagram at @huntingtonrunclub with the name on your Venmo and your size, and we'll match it up.</p></details>
       <details><summary>Can I change my size?</summary><p>Yes, up until orders lock on Nov 30. Send us a message and we'll update it.</p></details>
-      <details><summary>How does sizing run?</summary><p>We'll post fit notes with the full reveal on Instagram. If you're between sizes, ask in the DMs and we'll help you pick.</p></details>
+      <details><summary>How does sizing run?</summary><p>The men's sleeveless has a relaxed fit, with extra room in the chest and waist. The women's Align tank is snug and cropped, and reviewers say it runs true to size. Each product page on lululemon has a size guide. Still between sizes? Ask in the DMs and we'll help you pick.</p></details>
       <details><summary>Do you ship?</summary><p>Pickup is at a club run in Huntington Beach. If you can't make it, message us and we'll figure something out.</p></details>
       <details><summary>Can I order for a friend?</summary><p>Of course. Bump the quantity, or place a separate order with their name and size so we don't mix them up.</p></details>
     </div>
@@ -596,9 +633,24 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
 /* ================== EDIT ME ================== */
 const CONFIG = {
   venmoHandle: "Katie-Jordan-00",     // the club's Venmo username, no @
-  price: null,                        // e.g. 48. While null, the amount is left blank in Venmo.
-  item: null,                         // e.g. "Run tee". While null, shows "revealed soon".
-  sizes: ["XS","S","M","L","XL","XXL"],
+  // The two pieces. price: e.g. 48 (null = amount left blank in Venmo).
+  // image: put your render in the repo's assets/ folder with this name and it shows up automatically.
+  styles: [
+    { id:"mens", label:"Men's", chip:"Men's sleeveless",
+      name:"EasySet Training Sleeveless Shirt", color:"Black",
+      sizes:["XS","S","M","L","XL","XXL","3XL"], price:null,
+      fit:"Relaxed fit with extra room in the chest and waist. Light, stretchy recycled-poly blend.",
+      fabric:"Recycled polyester, lyocell, Lycra",
+      image:"assets/drop02-mens.png",
+      url:"https://shop.lululemon.com/p/easyset-training-sleeveless-shirt-graphic/vtyhs4myy6?fp=1&color=0001" },
+    { id:"womens", label:"Women's", chip:"Women's Align tank",
+      name:"lululemon Align\u2122 Tank Top", color:null,
+      sizes:["0","2","4","6","8","10","12","14","16","18","20"], price:null,
+      fit:"Snug, cropped, buttery-soft Nulu fabric with a built-in shelf bra and light support.",
+      fabric:"Nulu\u2122 (nylon, Lycra)",
+      image:"assets/drop02-womens.png",
+      url:"https://shop.lululemon.com/p/women-tanks/Align-Tank/_/prod9600539" }
+  ],
   maxQty: 5,
   email: "hello@huntingtonrunclub.com", // placeholder, swap for the real address
   phone: "",                          // e.g. "+17145550123". Leave empty to hide.
@@ -669,9 +721,48 @@ else if(daysLeft > 0){
 /* ---------- config into page ---------- */
 const handle = CONFIG.venmoHandle.replace(/^@/,"");
 const money = n => "$" + (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,"");
-$("#specItem").innerHTML = CONFIG.item ? escapeHtml(CONFIG.item) : 'Revealed soon <span class="tbd">on IG</span>';
-$("#specPrice").innerHTML = CONFIG.price ? money(CONFIG.price) : 'Announced with the reveal <span class="tbd">soon</span>';
-$("#specSizes").textContent = CONFIG.sizes[0] + " – " + CONFIG.sizes[CONFIG.sizes.length-1];
+const STY = id => CONFIG.styles.find(x=>x.id===id) || null;
+const priceOf = st => st && st.price ? st.price : null;
+$("#specItem").textContent = CONFIG.styles.map(st=>st.label+" "+st.chip.replace(st.label+" ","")).join(" + ");
+$("#specPrice").innerHTML = CONFIG.styles.every(st=>!st.price) ? 'Announced soon <span class="tbd">TBA</span>'
+  : CONFIG.styles.map(st=>escapeHtml(st.label)+" "+(st.price?money(st.price):"TBA")).join(" · ");
+$("#specSizes").textContent = CONFIG.styles.map(st=>st.label+" "+st.sizes[0]+"–"+st.sizes[st.sizes.length-1]).join(" · ");
+
+/* ---------- the two pieces ---------- */
+const SKETCH = {
+  mens:`<svg class="sketch" viewBox="0 0 200 240" aria-hidden="true">
+    <path class="ink" d="M58 22L72 17Q100 40 128 17L142 22C137 58 146 82 153 96L151 222Q100 229 49 222L47 96C54 82 63 58 58 22Z"/>
+    <path class="ink-l" d="M73 20Q100 46 127 20"/><path class="ink-l" d="M60 26C56 60 62 84 52 98"/><path class="ink-l" d="M140 26C144 60 138 84 148 98"/>
+    <path class="ink-l" d="M50 214Q100 221 150 214"/>
+    <path class="acc" d="M108 74c4-4 8-4 12 0s8 4 12 0"/><text x="120" y="88" text-anchor="middle">HRC</text></svg>`,
+  womens:`<svg class="sketch" viewBox="0 0 200 240" aria-hidden="true">
+    <path class="ink" d="M66 30L77 30C80 66 120 66 123 30L134 30C136 66 147 84 151 104L149 194Q100 202 51 194L49 104C53 84 64 66 66 30Z"/>
+    <path class="ink-l" d="M79 33C83 70 117 70 121 33"/><path class="ink-l" d="M54 160Q100 168 146 160"/>
+    <path class="ink-l" d="M52 186Q100 194 148 186"/>
+    <path class="acc" d="M88 112c4-4 8-4 12 0s8 4 12 0"/><text x="100" y="126" text-anchor="middle">HRC</text></svg>`
+};
+const piecesEl=$("#pieces");
+CONFIG.styles.forEach((st,i)=>{
+  const a=document.createElement("article"); a.className="piece";
+  const sizes=st.sizes[0]+" – "+st.sizes[st.sizes.length-1];
+  a.innerHTML=`<div class="render">${SKETCH[st.id]||SKETCH.mens}<span class="stamp">Mockup coming</span><span class="fig-n">fig. ${i+2} — ${escapeHtml(st.label.toLowerCase())}</span></div>
+    <div class="piece-meta">
+      <span class="kind">${escapeHtml(st.label)}${st.color?" · "+escapeHtml(st.color):""}</span>
+      <h3>${escapeHtml(st.name)}</h3>
+      <p>${escapeHtml(st.fit)}</p>
+      <dl class="facts"><div><dt>sizes</dt><dd>${escapeHtml(sizes)}</dd></div><div><dt>fabric</dt><dd>${escapeHtml(st.fabric)}</dd></div><div><dt>price</dt><dd>${st.price?money(st.price):"announced soon"}</dd></div></dl>
+      <div class="piece-actions"><button type="button" class="btn">Reserve this one
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <a class="ext" href="${st.url}" target="_blank" rel="noopener">see it on lululemon ↗</a></div>
+    </div>`;
+  if(st.image){
+    const img=new Image(); img.alt=st.label+" "+st.name+" with the HRC Drop 02 print"; img.decoding="async";
+    img.onload=()=>a.querySelector(".render").classList.add("has-img");
+    img.src=st.image; a.querySelector(".render").prepend(img);
+  }
+  a.querySelector(".btn").addEventListener("click",()=>{ selectStyle(st.id); $("#reserve").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"}); });
+  piecesEl.appendChild(a);
+});
 $("#specVenmo").textContent = "@" + handle;
 $("#slipTo").textContent = "@" + handle;
 $("#venmoHandle").textContent = "@" + handle + " ↗";
@@ -691,14 +782,31 @@ function fmtPhone(s){
 }
 
 /* ---------- order form → venmo ---------- */
-const state = { size:null, qty:1, name:"", phone:"" };
-const sizesEl = $("#sizes");
-CONFIG.sizes.forEach(s=>{
-  const b=document.createElement("button"); b.type="button"; b.className="size"; b.textContent=s;
+const state = { style:null, size:null, qty:1, name:"", phone:"" };
+const sizesEl = $("#sizes"), stylesEl = $("#styles");
+CONFIG.styles.forEach(st=>{
+  const b=document.createElement("button"); b.type="button"; b.className="size"; b.textContent=st.chip; b.dataset.id=st.id;
   b.setAttribute("role","radio"); b.setAttribute("aria-checked","false");
-  b.addEventListener("click",()=>{ state.size=s; sizesEl.querySelectorAll(".size").forEach(x=>x.setAttribute("aria-checked", x===b?"true":"false")); clearErr("#fSize"); render(); });
-  sizesEl.appendChild(b);
+  b.addEventListener("click",()=>selectStyle(st.id));
+  stylesEl.appendChild(b);
 });
+function selectStyle(id){
+  if(state.style!==id){ state.style=id; state.size=null; }
+  stylesEl.querySelectorAll(".size").forEach(x=>x.setAttribute("aria-checked", x.dataset.id===id?"true":"false"));
+  clearErr("#fStyle"); drawSizes(); render();
+}
+function drawSizes(){
+  sizesEl.textContent="";
+  const st=STY(state.style);
+  if(!st){ const h=document.createElement("span"); h.className="size-hint"; h.textContent="pick a style first ↑"; sizesEl.appendChild(h); return; }
+  st.sizes.forEach(sz=>{
+    const b=document.createElement("button"); b.type="button"; b.className="size"; b.textContent=sz;
+    b.setAttribute("role","radio"); b.setAttribute("aria-checked", state.size===sz?"true":"false");
+    b.addEventListener("click",()=>{ state.size=sz; sizesEl.querySelectorAll(".size").forEach(x=>x.setAttribute("aria-checked", x===b?"true":"false")); clearErr("#fSize"); render(); });
+    sizesEl.appendChild(b);
+  });
+}
+drawSizes();
 $("#qMinus").addEventListener("click",()=>{ state.qty=Math.max(1,state.qty-1); render(); });
 $("#qPlus").addEventListener("click",()=>{ state.qty=Math.min(CONFIG.maxQty,state.qty+1); render(); });
 $("#name").addEventListener("input",e=>{ state.name=e.target.value; clearErr("#fName"); render(); });
@@ -707,12 +815,12 @@ $("#phone").addEventListener("blur",e=>{ if(digits(e.target.value).length>=10){ 
 $("#orderForm").addEventListener("submit",e=>e.preventDefault());
 
 function noteText(){
-  const parts = ["HRC Drop 02", state.qty + "x " + (state.size||"?"), state.name.trim() || "Full name", state.phone.trim() ? fmtPhone(state.phone) : "phone"];
+  const parts = ["HRC Drop 02", state.qty + "x " + (STY(state.style)?STY(state.style).label+" ":"") + (state.size||"?"), state.name.trim() || "Full name", state.phone.trim() ? fmtPhone(state.phone) : "phone"];
   return parts.join(" | ");
 }
 function venmoUrl(note, qty){
   let u = "https://venmo.com/" + encodeURIComponent(handle) + "?txn=pay&audience=private";
-  if(CONFIG.price) u += "&amount=" + (CONFIG.price*qty).toFixed(2);
+  if(priceOf(STY(state.style))) u += "&amount=" + (priceOf(STY(state.style))*qty).toFixed(2);
   u += "&note=" + encodeURIComponent(note);
   return u;
 }
@@ -720,7 +828,7 @@ function venmoUrl(note, qty){
 const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 function venmoAppUrl(note, qty){
   let u="venmo://paycharge?txn=pay&recipients="+encodeURIComponent(handle)+"&audience=private";
-  if(CONFIG.price) u += "&amount=" + (CONFIG.price*qty).toFixed(2);
+  if(priceOf(STY(state.style))) u += "&amount=" + (priceOf(STY(state.style))*qty).toFixed(2);
   u += "&note=" + encodeURIComponent(note);
   return u;
 }
@@ -735,7 +843,8 @@ function openVenmo(e, appUrl, webUrl){
 }
 function problems(){
   const p = {};
-  if(!state.size) p["#fSize"] = "pick a size";
+  if(!state.style) p["#fStyle"] = "men's or women's?";
+  if(!state.size) p["#fSize"] = state.style ? "pick a size" : "pick a style, then a size";
   const n = state.name.trim();
   if(n.length < 3 || !/\S+\s+\S+/.test(n)) p["#fName"] = "first and last name, please";
   if(digits(state.phone).length < 10) p["#fPhone"] = "a 10-digit number so we can text you";
@@ -749,7 +858,8 @@ function render(){
   const nEl = $("#slipNote");
   nEl.textContent = note;
   nEl.classList.toggle("empty", !ok);
-  $("#slipAmt").textContent = CONFIG.price ? money(CONFIG.price*state.qty) + "  (" + state.qty + " × " + money(CONFIG.price) + ")" : "set when the price drops";
+  const pr=priceOf(STY(state.style));
+  $("#slipAmt").textContent = pr ? money(pr*state.qty) + "  (" + state.qty + " × " + money(pr) + ")" : "set when the price drops";
   const btn = $("#venmoBtn");
   btn.href = venmoUrl(note, state.qty);
   btn.setAttribute("aria-disabled", ok ? "false":"true");
