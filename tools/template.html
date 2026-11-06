@@ -148,16 +148,12 @@ h1 .u path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s .35s c
 #pier .stamp-text{font-family:var(--mono);font-size:6.4px;letter-spacing:.06em;fill:var(--accent);font-weight:600}
 .water-wrap{position:relative;margin-top:-7%}
 .water{
-  position:relative;aspect-ratio:2.35/1;min-height:250px;border-radius:4px;overflow:hidden;z-index:1;
-  box-shadow:var(--shadow);cursor:crosshair;touch-action:pan-y;background:linear-gradient(180deg,var(--water-shallow),var(--water-deep));
-  outline-offset:4px;
+  position:relative;width:100%;aspect-ratio:3.4/1;min-height:0;cursor:grab;touch-action:pan-y;outline-offset:6px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent);
 }
+.water:active{cursor:grabbing}
 .water canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.water::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),inset 0 30px 40px -30px rgba(0,0,0,.25)}
-.tape{position:absolute;width:92px;height:26px;background:color-mix(in srgb,var(--paper) 70%,transparent);z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.08);backdrop-filter:blur(1px)}
-[data-theme=dark] .tape{background:rgba(236,231,220,.17)}
-.tape.l{left:-22px;bottom:18px;transform:rotate(-38deg)}
-.tape.r{right:-22px;bottom:18px;transform:rotate(36deg)}
 .fig{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--muted)}
 .fig b{color:var(--accent);font-weight:600}
 .hint{display:inline-flex;align-items:center;gap:8px}
@@ -318,8 +314,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   .hero-row,.drop-grid,.reserve{grid-template-columns:1fr;gap:36px}
   .hero-note{position:relative;right:auto;top:auto;margin-top:22px;margin-left:56px}
   .hero-note .arrow{left:-52px;top:-30px;transform:scaleY(-1)}
-  .water{aspect-ratio:1.25/1}
-  .tape{width:70px;height:22px}
+  .water{aspect-ratio:1.6/1;min-height:0}
   .stats{grid-template-columns:1fr;gap:14px}
   .stat:nth-child(n){transform:none}
   .timeline{grid-template-columns:1fr;gap:34px;padding-left:34px}
@@ -401,14 +396,12 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
     <figure class="scene" style="margin-left:0;margin-right:0">
       <!--PIER-->
       <div class="water-wrap">
-      <div class="water" id="water" tabindex="0" role="img" aria-label="Interactive ocean with surfers. Click or tap the water to make waves; press Enter to send a set.">
-        <canvas id="waterGL"></canvas>
-        <canvas id="surfers"></canvas>
+      <div class="water" id="water" tabindex="0" role="img" aria-label="Interactive ocean seen from the side, with surfers. Drag across the water to push a wave that way; tap to splash. Arrow keys send a wave left or right.">
+        <canvas id="sea"></canvas>
       </div>
-      <span class="tape l" aria-hidden="true"></span><span class="tape r" aria-hidden="true"></span>
       </div>
       <figcaption class="fig">
-        <span>fig. 1 — the pier, early. tap or drag the water to send the surfers a set.</span>
+        <span>fig. 1 — eye level with the lineup. drag across the water to push a wave; the surfers go with it.</span>
         <span>waves made: <b id="waveCount">0</b> · rides caught: <b id="rideCount">0</b></span>
       </figcaption>
     </figure>
@@ -825,249 +818,246 @@ if(document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 window.addEventListener("load",layout);
 layout();
 
-/* ================== WATER ================== */
-const wEl=$("#water"), glc=$("#waterGL"), sc=$("#surfers"), sctx=sc.getContext("2d");
-let gw=0, gh=0, A=null, B=null, tex8=null, W=1, H=1, DPR=1;
-let gl=null, prog=null, texture=null, uni={}, ctx2=null, off=null, offCtx=null, offImg=null;
-let waves=0, rides=0, visible=true, time=0;
-let colors={deep:[.05,.28,.34],shallow:[.35,.68,.7],sky:[1,.96,.89]};
+/* ================== OCEAN (side view) ================== */
+const wEl=$("#water"), cv=$("#sea"), cx=cv.getContext("2d");
+const N=240;
+let R=new Float32Array(N), Lw=new Float32Array(N), buf=new Float32Array(N);
+let W=1, H=1, DPR=1, cell=1, restY=1, k=1, maxA=1, time=0, waves=0, rides=0, visible=true, running=false;
+const PILES=[]; for(let x=48;x<985;x+=44) PILES.push(x);
+const PILE_J=PILES.map(()=>Math.random()*3-1.5);
+const C=0.2;            // wave speed, px per ms (times k)
+let col={deep:"rgb(13,71,87)",shallow:"rgb(88,174,180)",ink:"#1c1b19",paper:"#f5f1e8",accent:"#0a6b8f",foam:"rgba(255,255,255,.85)"};
+let spray=[];
 
-function hex2rgb(h){ h=h.trim().replace("#",""); if(h.length===3) h=h.split("").map(c=>c+c).join(""); const n=parseInt(h,16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; }
-function mix(a,b,t){ return a.map((v,i)=>v+(b[i]-v)*t); }
+function hex2rgb(h){ h=(h||"").trim().replace("#",""); if(h.length===3) h=h.split("").map(c=>c+c).join(""); const n=parseInt(h||"000000",16); return [n>>16&255,n>>8&255,n&255]; }
+function mixc(a,b,t){ return a.map((v,i)=>Math.round(v+(b[i]-v)*t)); }
+const rgb=a=>"rgb("+a.join(",")+")";
 function readColors(){
-  const cs=getComputedStyle(root);
-  const acc=hex2rgb(cs.getPropertyValue("--accent")||"#0a6b8f");
-  colors.deep=mix(hex2rgb(cs.getPropertyValue("--water-deep")),acc,.18);
-  colors.shallow=mix(hex2rgb(cs.getPropertyValue("--water-shallow")),acc,.22);
-  colors.sky=hex2rgb(cs.getPropertyValue("--water-sky"));
+  const cs=getComputedStyle(root), g=n=>cs.getPropertyValue(n).trim();
+  const acc=hex2rgb(g("--accent"));
+  col.deep=rgb(mixc(hex2rgb(g("--water-deep")),acc,.16));
+  col.shallow=rgb(mixc(hex2rgb(g("--water-shallow")),acc,.22));
+  col.ink=g("--ink"); col.paper=g("--paper"); col.accent=g("--accent");
 }
-themeListeners.push(()=>{ readColors(); if(reduce) frame(performance.now(), true); });
+themeListeners.push(()=>{ readColors(); if(!running) frame(performance.now(),true); });
 
-const SURF_SKIN=["#e9c39b","#c68d5f","#8d5a3b","#f1d2b4","#5e3b28"];
-const surfers=[[.16,.58],[.34,.78],[.55,.5],[.72,.72],[.88,.56]].map(([u,v],i)=>({
-  u,v,hu:u,hv:v,vu:0,vv:0,ang:(i%2?0.3:-2.6)+Math.random()*.6,ride:0,h:0,skin:SURF_SKIN[i],bob:Math.random()*6.28
-}));
-
-function resizeWater(){
+function resize(){
   const r=wEl.getBoundingClientRect(); if(r.width<2) return;
   W=r.width; H=r.height; DPR=Math.min(window.devicePixelRatio||1,2);
-  const gq=Math.min(DPR,1.5);
-  glc.width=Math.round(W*gq); glc.height=Math.round(H*gq);
-  sc.width=Math.round(W*DPR); sc.height=Math.round(H*DPR);
-  const ngw=W<600?150:200, ngh=Math.max(70,Math.min(220,Math.round(ngw*H/W)));
-  if(ngw!==gw||ngh!==gh){ gw=ngw; gh=ngh; A=new Float32Array(gw*gh); B=new Float32Array(gw*gh); tex8=new Uint8Array(gw*gh*4);
-    if(offCtx){ off.width=gw; off.height=gh; offImg=offCtx.createImageData(gw,gh); } }
-  if(gl) gl.viewport(0,0,glc.width,glc.height);
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  cell=W/(N-1); restY=H*(W<600?.42:.4); maxA=restY*.8;
+  k=Math.max(.7,Math.min(1.3,W/820));
+  surfers.forEach((s,i)=>{ s.off=W<600&&(i===1||i===3);
+    s.home=s.hf*W; if(!s.x) s.x=s.home; s.x=Math.min(s.x,W*.96); });
 }
 
-function initGL(){
-  try { gl = glc.getContext("webgl",{antialias:false,premultipliedAlpha:false}) || glc.getContext("experimental-webgl"); } catch(e){ gl=null; }
-  if(!gl) return false;
-  const vs=`attribute vec2 p;varying vec2 uv;void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}`;
-  const fs=`precision mediump float;varying vec2 uv;uniform sampler2D T;uniform float t;uniform vec2 res;uniform vec3 deep,shallow,sky;
-  float sw(vec2 p){return sin(p.x*6.5+t*.8+sin(p.y*2.3+t*.35)*1.4)*.5+sin(p.x*12.-p.y*8.5+t*1.2)*.22+sin(p.y*17.+p.x*3.5-t*1.5)*.1;}
-  void main(){
-    vec2 st=vec2(uv.x,1.-uv.y);
-    vec4 tx=texture2D(T,st);
-    float h=(tx.r-.5)*2.;
-    vec2 n=(tx.gb-.5)*2.*1.5;
-    vec2 p=vec2(uv.x*res.x/res.y,uv.y);
-    float e=.003,s0=sw(p);
-    vec2 sn=vec2(sw(p+vec2(e,0.))-s0,sw(p+vec2(0.,e))-s0)/e*.014;
-    vec3 N=normalize(vec3(n.x+sn.x,-n.y+sn.y,1.));
-    vec3 L=normalize(vec3(-.35,.55,.76));
-    float diff=clamp(dot(N,L),0.,1.);
-    vec3 Hh=normalize(L+vec3(0.,0.,1.));
-    float spec=pow(max(dot(N,Hh),0.),110.);
-    vec3 col=mix(deep,shallow,clamp(.18+.62*uv.y+h*.28,0.,1.));
-    vec2 q=p*7.5+N.xy*2.4;
-    float c=sin(q.x+sin(q.y*1.7+t*.6))*sin(q.y*1.3+sin(q.x*1.2-t*.5));
-    c=pow(max(c,0.),5.);
-    col*=.7+.44*diff;
-    col+=shallow*c*.22;
-    col=mix(col,sky,clamp(spec*.9,0.,1.));
-    float foam=smoothstep(.5,1.2,length(n));
-    col=mix(col,vec3(1.),foam*.5);
-    col*=.92+.08*smoothstep(0.,.25,uv.y);
-    gl_FragColor=vec4(col,1.);
-  }`;
-  const sh=(type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-  try{
-    prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog);
-    if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) throw new Error("link");
-  }catch(e){ gl=null; return false; }
-  gl.useProgram(prog);
-  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  const loc=gl.getAttribLocation(prog,"p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
-  texture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,texture);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-  ["T","t","res","deep","shallow","sky"].forEach(k=>uni[k]=gl.getUniformLocation(prog,k));
-  gl.uniform1i(uni.T,0);
-  return true;
+/* --- wave field: a right-moving part (R) and a left-moving part (Lw), surface = both added --- */
+function at(a,f){ const i=Math.floor(f); if(i<0||i>=N-1) return 0; const t=f-i; return a[i]*(1-t)+a[i+1]*t; }
+function advect(dt){
+  const s=C*k*dt/cell, d=Math.pow(.86,dt/1000);
+  for(let i=0;i<N;i++) buf[i]=at(R,i-s)*d; R.set(buf);
+  for(let i=0;i<N;i++) buf[i]=at(Lw,i+s)*d; Lw.set(buf);
 }
-function init2D(){
-  ctx2=glc.getContext("2d"); off=document.createElement("canvas"); offCtx=off.getContext("2d");
-  off.width=gw||1; off.height=gh||1; offImg=offCtx.createImageData(off.width,off.height);
+function inject(a,x,amp,sig){
+  const c=x/cell, sg=sig/cell, lo=Math.max(0,Math.floor(c-3*sg)), hi=Math.min(N-1,Math.ceil(c+3*sg));
+  for(let i=lo;i<=hi;i++){ a[i]+=amp*Math.exp(-((i-c)*(i-c))/(2*sg*sg)); if(a[i]>maxA*1.2) a[i]=maxA*1.2; }
 }
+function swell(x){ return k*(3.2*Math.sin(x*.016/k+time*1.0)+1.8*Math.sin(x*.041/k-time*.72)+.9*Math.sin(x*.09/k+time*1.9)); }
+function lift(x){ const f=x/cell; return maxA*Math.tanh((at(R,f)+at(Lw,f))/maxA)+swell(x); }
+function surfY(x){ return restY-lift(x); }
 
-function ripple(u,v,str,rad){
-  const gx=u*(gw-1), gy=v*(gh-1), r=rad||Math.max(2.5,gw/52);
-  const x0=Math.max(1,Math.floor(gx-r)), x1=Math.min(gw-2,Math.ceil(gx+r));
-  const y0=Math.max(1,Math.floor(gy-r)), y1=Math.min(gh-2,Math.ceil(gy+r));
-  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
-    const d=Math.hypot(x-gx,y-gy)/r; if(d<1) A[y*gw+x]+=str*(.5+.5*Math.cos(Math.PI*d));
-  }
-}
-function step(){
-  const damp=.986;
-  for(let y=1;y<gh-1;y++){ const row=y*gw; for(let x=1;x<gw-1;x++){ const i=row+x;
-    B[i]=((A[i-1]+A[i+1]+A[i-gw]+A[i+gw])*.5-B[i])*damp; } }
-  const t=A; A=B; B=t;
-}
-function encode(){
-  const c=v=>v<0?0:v>255?255:v|0;
-  for(let y=0;y<gh;y++) for(let x=0;x<gw;x++){
-    const i=y*gw+x, k=i*4;
-    const l=A[x>0?i-1:i], r=A[x<gw-1?i+1:i], u=A[y>0?i-gw:i], d=A[y<gh-1?i+gw:i];
-    tex8[k]=c(128+A[i]*90); tex8[k+1]=c(128+(l-r)*150); tex8[k+2]=c(128+(u-d)*150); tex8[k+3]=255;
-  }
-}
-function sample(u,v){
-  const x=Math.min(gw-2,Math.max(1,Math.round(u*(gw-1)))), y=Math.min(gh-2,Math.max(1,Math.round(v*(gh-1)))), i=y*gw+x;
-  return {h:A[i], dx:(A[i+1]-A[i-1])*.5, dy:(A[i+gw]-A[i-gw])*.5};
-}
+/* --- surfers --- */
+const SKIN=["#e9c39b","#c68d5f","#8d5a3b","#f1d2b4","#5e3b28"];
+const surfers=[.17,.36,.55,.74,.88].map((hf,i)=>({hf,home:0,x:0,vx:0,dir:i%2?-1:1,standing:false,linger:0,bob:Math.random()*6,skin:SKIN[i]}));
 
-function updateSurfers(){
+function updateSurfers(dt){
+  const f=dt/16.67;
   surfers.forEach(s=>{
-    const g=sample(s.u,s.v);
-    s.h=g.h;
-    s.vu+=-g.dx*.32/gw; s.vv+=-g.dy*.32/gh;
-    if(!reduce){ s.vu+=(s.hu-s.u)*.00004; s.vv+=(s.hv-s.v)*.00004; }
-    s.vu*=.955; s.vv*=.955;
-    s.u+=s.vu; s.v+=s.vv;
-    if(s.u<.05){s.u=.05;s.vu=Math.abs(s.vu);} if(s.u>.95){s.u=.95;s.vu=-Math.abs(s.vu);}
-    if(s.v<.3){s.v=.3;s.vv=Math.abs(s.vv);}  if(s.v>.9){s.v=.9;s.vv=-Math.abs(s.vv);}
-    const slope=Math.hypot(g.dx,g.dy);
-    if(slope>.075 && s.ride<=0){ s.ride=80; rides++; $("#rideCount").textContent=rides; }
-    if(s.ride>0) s.ride--;
-    const sp=Math.hypot(s.vu*W,s.vv*H);
-    if(sp>.15){ const target=Math.atan2(s.vv*H,s.vu*W); let da=target-s.ang; da=Math.atan2(Math.sin(da),Math.cos(da)); s.ang+=da*Math.min(.2,sp*.06); }
-    s.bob+=.03;
+    if(s.off) return;
+    const fi=s.x/cell, r=at(R,fi), l=at(Lw,fi), amp=Math.abs(r)+Math.abs(l);
+    const push=(r-l)/(amp+8*k), grip=Math.min(1,amp/(16*k));
+    s.vx+=(C*k*1.08*push-s.vx)*Math.min(1,.07*f)*grip;
+    s.vx*=Math.pow(.986,f);
+    if(!reduce) s.vx+=(s.home-s.x)*.0000022*dt;
+    s.x+=s.vx*dt;
+    if(s.x<W*.04){ s.x=W*.04; s.vx=Math.abs(s.vx)*.15; }
+    if(s.x>W*.96){ s.x=W*.96; s.vx=-Math.abs(s.vx)*.15; }
+    const riding=Math.abs(r-l)>12*k && Math.abs(s.vx)>.04*k;
+    if(riding){ if(!s.standing){ s.standing=true; rides++; $("#rideCount").textContent=rides; } s.linger=650; s.dir=s.vx>0?1:-1; }
+    else if(s.standing){ s.linger-=dt; if(s.linger<=0) s.standing=false; }
+    s.bob+=dt*.002;
   });
-}
-function drawSurfers(){
-  sctx.setTransform(DPR,0,0,DPR,0,0); sctx.clearRect(0,0,W,H);
-  const k=Math.max(.72,Math.min(1.2,W/850));
-  const acc=getComputedStyle(root).getPropertyValue("--accent").trim()||"#0a6b8f";
-  surfers.forEach(s=>{
-    const L=40*k, w=12*k, riding=s.ride>0;
-    const bobY = reduce?0:Math.sin(s.bob)*.8;
-    sctx.save();
-    sctx.translate(s.u*W, s.v*H - s.h*5*k + bobY);
-    sctx.rotate(s.ang);
-    const sc=1+s.h*.07; sctx.scale(sc,sc);
-    if(riding){ // wake
-      sctx.strokeStyle="rgba(255,255,255,.55)"; sctx.lineWidth=1.6*k; sctx.lineCap="round";
-      sctx.beginPath(); sctx.moveTo(-L*.45,-w*.6); sctx.quadraticCurveTo(-L*.9,-w*1.2,-L*1.3,-w*1.6); sctx.stroke();
-      sctx.beginPath(); sctx.moveTo(-L*.45,w*.6); sctx.quadraticCurveTo(-L*.9,w*1.2,-L*1.3,w*1.6); sctx.stroke();
-    }
-    // shadow
-    sctx.fillStyle="rgba(0,25,35,.22)"; sctx.beginPath(); sctx.ellipse(2.5*k,3.5*k,L*.5,w*.55,0,0,Math.PI*2); sctx.fill();
-    // board
-    sctx.beginPath();
-    sctx.moveTo(L*.5,0);
-    sctx.bezierCurveTo(L*.38,-w*.62,-L*.2,-w*.62,-L*.46,-w*.36);
-    sctx.quadraticCurveTo(-L*.52,0,-L*.46,w*.36);
-    sctx.bezierCurveTo(-L*.2,w*.62,L*.38,w*.62,L*.5,0);
-    sctx.fillStyle="#fbf5e6"; sctx.fill();
-    sctx.strokeStyle="#1b1a18"; sctx.lineWidth=1.1; sctx.stroke();
-    sctx.strokeStyle=acc; sctx.lineWidth=1.4*k; sctx.beginPath(); sctx.moveTo(L*.4,0); sctx.lineTo(-L*.4,0); sctx.stroke();
-    sctx.strokeStyle="#1b1a18"; sctx.lineWidth=1.1; sctx.lineCap="round";
-    if(riding){
-      // standing, top-down: feet apart along the board, arms out
-      sctx.strokeStyle="#1b1a18"; sctx.lineWidth=3.4*k;
-      sctx.beginPath(); sctx.moveTo(-9*k,0); sctx.lineTo(9*k,0); sctx.stroke(); // shoulders/arms
-      sctx.lineWidth=1.6*k; sctx.beginPath(); sctx.moveTo(9*k,0); sctx.lineTo(13*k,-2.5*k); sctx.moveTo(-9*k,0); sctx.lineTo(-13*k,2.5*k); sctx.stroke();
-      sctx.fillStyle=acc; sctx.beginPath(); sctx.ellipse(0,0,5.5*k,4.2*k,0,0,Math.PI*2); sctx.fill(); sctx.lineWidth=1; sctx.stroke();
-      sctx.fillStyle=s.skin; sctx.beginPath(); sctx.arc(1*k,0,3.1*k,0,Math.PI*2); sctx.fill(); sctx.stroke();
-    } else {
-      // sitting, legs dangling off both rails
-      sctx.strokeStyle="rgba(27,26,24,.55)"; sctx.lineWidth=2.6*k;
-      sctx.beginPath(); sctx.moveTo(-3*k,-2*k); sctx.lineTo(-5*k,-w*.95); sctx.moveTo(-3*k,2*k); sctx.lineTo(-5*k,w*.95); sctx.stroke();
-      sctx.fillStyle=acc; sctx.strokeStyle="#1b1a18"; sctx.lineWidth=1;
-      sctx.beginPath(); sctx.ellipse(-2*k,0,4.6*k,4*k,0,0,Math.PI*2); sctx.fill(); sctx.stroke();
-      sctx.fillStyle=s.skin; sctx.beginPath(); sctx.arc(-1.2*k,0,2.9*k,0,Math.PI*2); sctx.fill(); sctx.stroke();
-    }
-    sctx.restore();
-  });
-}
-function renderWater(){
-  encode();
-  if(gl){
-    gl.bindTexture(gl.TEXTURE_2D,texture);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gw,gh,0,gl.RGBA,gl.UNSIGNED_BYTE,tex8);
-    gl.uniform1f(uni.t,time); gl.uniform2f(uni.res,glc.width,glc.height);
-    gl.uniform3fv(uni.deep,colors.deep); gl.uniform3fv(uni.shallow,colors.shallow); gl.uniform3fv(uni.sky,colors.sky);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-  } else if(ctx2){
-    if(off.width!==gw||off.height!==gh){ off.width=gw; off.height=gh; offImg=offCtx.createImageData(gw,gh); }
-    const d=offImg.data;
-    for(let y=0;y<gh;y++){ const vy=1-y/gh; for(let x=0;x<gw;x++){ const i=y*gw+x,k=i*4;
-      const h=(tex8[k]-128)/64, nx=(tex8[k+1]-128)/85, ny=(tex8[k+2]-128)/85;
-      const t=Math.min(1,Math.max(0,.18+.62*vy+h*.28)); const li=.82+(-nx*.35+ny*.55)*.6;
-      for(let c=0;c<3;c++) d[k+c]=Math.min(255,(colors.deep[c]+(colors.shallow[c]-colors.deep[c])*t)*li*255);
-      d[k+3]=255; } }
-    offCtx.putImageData(offImg,0,0);
-    ctx2.imageSmoothingEnabled=true; ctx2.drawImage(off,0,0,glc.width,glc.height);
+  for(let a=0;a<surfers.length;a++) for(let b=a+1;b<surfers.length;b++){
+    const p=surfers[a], q=surfers[b]; if(p.off||q.off) continue; const d=q.x-p.x, min=40*k;
+    if(Math.abs(d)<min){ const pushv=(min-Math.abs(d))*.002*(d<0?-1:1); p.vx-=pushv; q.vx+=pushv; }
   }
 }
-let last=0, nextDrop=0, needsDraw=true;
-let running=false;
-function frame(ts, once){
+
+function line(pts){ cx.beginPath(); cx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) cx.lineTo(pts[i][0],pts[i][1]); cx.stroke(); }
+function drawSurfer(s){
+  const y=surfY(s.x), sl=(surfY(s.x+5*k)-surfY(s.x-5*k))/(10*k);
+  cx.save();
+  cx.translate(s.x, y+1.2*k);
+  cx.rotate(Math.atan(sl));
+  cx.scale(s.dir*k,k);
+  const lw=1/k;
+  cx.lineCap="round"; cx.lineJoin="round";
+  if(!s.standing){ // shins hang in the water
+    cx.globalAlpha=.45; cx.strokeStyle=col.ink; cx.lineWidth=1.8*lw;
+    line([[6,-3],[7,11]]); line([[3,-3],[3,12]]); cx.globalAlpha=1;
+  }
+  // board
+  cx.beginPath();
+  cx.moveTo(-22,-1); cx.quadraticCurveTo(-22,-4,-16,-4); cx.lineTo(15,-4); cx.quadraticCurveTo(22,-4,26,-8);
+  cx.quadraticCurveTo(25,1,15,1); cx.lineTo(-17,1); cx.quadraticCurveTo(-22,1,-22,-1); cx.closePath();
+  cx.fillStyle=col.paper; cx.fill(); cx.strokeStyle=col.ink; cx.lineWidth=1.5*lw; cx.stroke();
+  cx.strokeStyle=col.accent; cx.lineWidth=1.3*lw; line([[-17,-1.5],[17,-1.5]]);
+  cx.strokeStyle=col.ink; cx.lineWidth=1.8*lw;
+  let head;
+  if(s.standing){
+    const b=Math.sin(s.bob*3)*.8;
+    line([[-9,-4],[-7,-14+b],[-1,-22+b]]);              // back leg
+    line([[9,-4],[8,-14+b],[-1,-22+b]]);                // front leg
+    line([[2,-33+b],[10,-33+b],[16,-37+b]]);            // front arm
+    line([[2,-33+b],[-4,-30+b],[-11,-27+b]]);           // back arm
+    cx.strokeStyle=col.accent; cx.lineWidth=3.4*lw; line([[-1,-22+b],[2,-33+b]]); // torso / the merch
+    head=[5,-39.5+b];
+  } else {
+    const b=Math.sin(s.bob)*.6;
+    line([[-3,-5],[6,-4]]);                             // thighs on the board
+    line([[-2,-21+b],[3,-14+b],[6,-5]]);                // arm resting
+    cx.strokeStyle=col.accent; cx.lineWidth=3.4*lw; line([[-3,-5],[-2,-21+b]]);
+    head=[-1,-27.5+b];
+  }
+  cx.beginPath(); cx.arc(head[0],head[1],4.6,0,Math.PI*2); cx.fillStyle=s.skin; cx.fill();
+  cx.strokeStyle=col.ink; cx.lineWidth=1.5*lw; cx.stroke();
+  cx.restore();
+  if(s.standing && Math.abs(s.vx)>.08*k && !reduce && Math.random()<.5){
+    spray.push({x:s.x-s.dir*20*k, y:y-2*k, vx:-s.dir*(.03+Math.random()*.08)*k, vy:-(.08+Math.random()*.12)*k, life:600});
+  }
+}
+
+function draw(){
+  cx.setTransform(DPR,0,0,DPR,0,0); cx.clearRect(0,0,W,H);
+  // surface points (crests lean the way they travel)
+  const px=new Float32Array(N), py=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const x=i*cell; let xd=x+.28*(R[i]-Lw[i]);
+    if(i>0 && xd<px[i-1]+.2) xd=px[i-1]+.2;
+    px[i]=xd; py[i]=surfY(x);
+  }
+  // pilings, continuing the pier sketch down into the sea
+  const s=W/1000;
+  cx.strokeStyle=col.ink; cx.lineCap="round";
+  PILES.forEach((x,i)=>{
+    const X=x*s+PILE_J[i]*s*.3;
+    cx.globalAlpha=1; cx.lineWidth=1.5; line([[X,0],[X+PILE_J[i]*s,H]]);
+    cx.globalAlpha=.5; cx.lineWidth=1; line([[X+4*s,0],[X+4*s+PILE_J[i]*s,H]]);
+  });
+  cx.globalAlpha=1;
+  // water body
+  const g=cx.createLinearGradient(0,restY-maxA,0,H);
+  g.addColorStop(0,col.shallow); g.addColorStop(1,col.deep);
+  cx.beginPath(); cx.moveTo(px[0],py[0]); for(let i=1;i<N;i++) cx.lineTo(px[i],py[i]);
+  cx.lineTo(W,H); cx.lineTo(0,H); cx.closePath();
+  cx.globalAlpha=.88; cx.fillStyle=g; cx.fill(); cx.globalAlpha=1;
+  // hand-drawn swell lines under the surface
+  cx.strokeStyle=col.ink; cx.lineWidth=1;
+  [[20,.55,.2],[46,.32,.15],[84,.14,.11],[128,.06,.08]].forEach(([d,fac,a])=>{
+    cx.globalAlpha=a; cx.setLineDash([28*k,14*k]); cx.lineDashOffset=-time*12;
+    cx.beginPath();
+    for(let i=0;i<N;i+=2){ const yy=restY+d*k+(py[i]-restY)*fac; i?cx.lineTo(i*cell,yy):cx.moveTo(0,yy); }
+    cx.stroke();
+  });
+  cx.setLineDash([]); cx.globalAlpha=1;
+  // glint just under the surface
+  cx.strokeStyle="rgba(255,255,255,.35)"; cx.lineWidth=2.2;
+  cx.beginPath(); for(let i=0;i<N;i++){ i?cx.lineTo(px[i],py[i]+4):cx.moveTo(px[i],py[i]+4); } cx.stroke();
+  // ink surface line, drawn twice like a pen sketch
+  cx.strokeStyle=col.ink; cx.lineWidth=1.8;
+  cx.beginPath(); for(let i=0;i<N;i++){ i?cx.lineTo(px[i],py[i]):cx.moveTo(px[i],py[i]); } cx.stroke();
+  cx.globalAlpha=.4; cx.lineWidth=1;
+  cx.beginPath(); for(let i=0;i<N;i+=3){ i?cx.lineTo(px[i]+.8,py[i]+1.6):cx.moveTo(px[i],py[i]+1.6); } cx.stroke();
+  cx.globalAlpha=1;
+  // foam on the crests
+  for(let i=2;i<N-2;i++){
+    [[R,1],[Lw,-1]].forEach(([a,dir])=>{
+      if(a[i]>15*k && a[i]>=a[i-1] && a[i]>=a[i+1]){
+        const n=Math.min(6,Math.floor(a[i]/(7*k)));
+        cx.fillStyle=col.foam;
+        for(let j=0;j<n;j++){ cx.beginPath(); cx.arc(px[i]+dir*(j*3.2*k), py[i]+j*2.2*k-1, (2.8-j*.3)*k, 0, Math.PI*2); cx.fill(); }
+        cx.strokeStyle=col.ink; cx.lineWidth=1.2; cx.beginPath();
+        cx.arc(px[i]+dir*4*k, py[i]+2*k, 5*k, dir>0?Math.PI*1.1:-Math.PI*.1, dir>0?Math.PI*1.9:Math.PI*.9, dir<0); cx.stroke();
+      }
+    });
+  }
+  surfers.forEach(s=>{ if(!s.off) drawSurfer(s); });
+  // spray
+  cx.fillStyle=col.foam;
+  spray.forEach(p=>{ cx.globalAlpha=Math.max(0,p.life/600); cx.beginPath(); cx.arc(p.x,p.y,1.6*k,0,Math.PI*2); cx.fill(); });
+  cx.globalAlpha=1;
+}
+function updateSpray(dt){
+  spray.forEach(p=>{ p.vy+=.0011*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; });
+  spray=spray.filter(p=>p.life>0 && p.y<surfY(p.x)+4);
+  if(spray.length>240) spray.splice(0,spray.length-240);
+}
+function splash(x,n,power){
+  const y=surfY(x);
+  for(let i=0;i<n;i++) spray.push({x:x+(Math.random()-.5)*10*k, y, vx:(Math.random()-.5)*.25*k*power, vy:-(.15+Math.random()*.3)*k*power, life:700});
+}
+
+let last=0, nextSet=0;
+function frame(ts,once){
   if(!once){ if(!visible||document.hidden){ running=false; return; } requestAnimationFrame(frame); }
-  if(!A) return;
-  const dt=Math.min(50,ts-(last||ts)); last=ts;
+  const dt=Math.min(40,ts-(last||ts)); last=ts;
   if(!reduce) time+=dt/1000;
-  if(!reduce && ts>nextDrop){ ripple(Math.random()*.9+.05, .32+Math.random()*.6, .18+Math.random()*.2); nextDrop=ts+1400+Math.random()*2200; }
-  step(); updateSurfers();
-  renderWater(); drawSurfers();
+  if(!reduce && ts>nextSet){
+    if(nextSet){ Math.random()<.65 ? inject(R,0,10*k,46*k) : inject(Lw,W,10*k,46*k); }
+    nextSet=ts+6500+Math.random()*5500;
+  }
+  advect(dt); updateSurfers(dt); updateSpray(dt); draw();
 }
 function startLoop(){ if(running) return; running=true; last=0; requestAnimationFrame(frame); }
 
-// interaction
-let down=false, lastPt=null;
-function pt(e){ const r=wEl.getBoundingClientRect(); return {u:(e.clientX-r.left)/r.width, v:(e.clientY-r.top)/r.height}; }
-wEl.addEventListener("pointerdown",e=>{
-  const p=pt(e); ripple(p.u,p.v,1.8); waves++; $("#waveCount").textContent=waves; down=true; lastPt=p;
-  if(reduce) kick();
-});
+// drag = push a wave in that direction; tap = splash both ways
+let down=false, lastP=null, moved=0, counted=false;
+function ptX(e){ const r=wEl.getBoundingClientRect(); return {x:e.clientX-r.left, t:e.timeStamp||performance.now()}; }
+function bump(){ waves++; $("#waveCount").textContent=waves; if(reduce) kick(); }
+wEl.addEventListener("pointerdown",e=>{ down=true; lastP=ptX(e); moved=0; counted=false; try{wEl.setPointerCapture(e.pointerId);}catch(_){} });
 wEl.addEventListener("pointermove",e=>{
-  if(!down || e.pointerType==="touch") return;
-  const p=pt(e); if(Math.hypot((p.u-lastPt.u)*W,(p.v-lastPt.v)*H)>14){ ripple(p.u,p.v,.7); lastPt=p; }
+  if(!down) return;
+  const p=ptX(e), dx=p.x-lastP.x, dtp=Math.max(8,p.t-lastP.t);
+  if(Math.abs(dx)<2) return;
+  const v=dx/dtp; moved+=Math.abs(dx);
+  const amp=Math.min(13*k,Math.abs(v)*10*k)*Math.min(1,Math.abs(dx)/10);
+  inject(v>0?R:Lw, p.x, amp, 28*k);
+  if(Math.abs(v)>.7 && !reduce) splash(p.x,1,1);
+  if(!counted && moved>12){ counted=true; bump(); }
+  lastP=p;
 });
-["pointerup","pointerleave","pointercancel"].forEach(t=>wEl.addEventListener(t,()=>{down=false;}));
+function endDrag(e){
+  if(!down) return; down=false;
+  if(moved<6 && e.type==="pointerup"){ const x=ptX(e).x; inject(R,x,9*k,20*k); inject(Lw,x,9*k,20*k); splash(x,14,1); bump(); }
+}
+["pointerup","pointercancel","lostpointercapture"].forEach(t=>wEl.addEventListener(t,endDrag));
 wEl.addEventListener("keydown",e=>{
-  if(e.key==="Enter"||e.key===" "){ e.preventDefault();
-    for(let i=0;i<5;i++) ripple(.1+i*.2, .35, 1.4, gw/30);
-    waves++; $("#waveCount").textContent=waves; if(reduce) kick(); }
+  if(e.key==="ArrowRight"){ e.preventDefault(); inject(R,W*.06,16*k,50*k); bump(); }
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); inject(Lw,W*.94,16*k,50*k); bump(); }
+  else if(e.key==="Enter"||e.key===" "){ e.preventDefault(); inject(R,W*.5,12*k,30*k); inject(Lw,W*.5,12*k,30*k); splash(W*.5,16,1); bump(); }
 });
-// reduced motion: no ambient animation; run the sim only for a short while after you touch it
+// reduced motion: still, until you touch it
 let kickUntil=0;
-function kick(){ const was=performance.now()<kickUntil; kickUntil=performance.now()+6000; if(!was) requestAnimationFrame(rmLoop); }
+function kick(){ const was=performance.now()<kickUntil; kickUntil=performance.now()+9000; if(!was){ last=0; requestAnimationFrame(rmLoop); } }
 function rmLoop(ts){ frame(ts,true); if(ts<kickUntil) requestAnimationFrame(rmLoop); }
 
-readColors();
-resizeWater();
-if(!initGL()) init2D();
-if("ResizeObserver" in window) new ResizeObserver(()=>{ resizeWater(); if(reduce) frame(performance.now(),true); }).observe(wEl);
+readColors(); resize();
+if("ResizeObserver" in window) new ResizeObserver(()=>{ resize(); if(!running) frame(performance.now(),true); }).observe(wEl);
 if("IntersectionObserver" in window){
-  new IntersectionObserver(es=>{ const v=es[0].isIntersecting; if(v&&!visible&&!reduce){ visible=true; startLoop(); } visible=v; }).observe(wEl);
+  new IntersectionObserver(es=>{ const v=es[0].isIntersecting; visible=v; if(v&&!reduce) startLoop(); }).observe(wEl);
 }
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden && visible && !reduce) startLoop(); });
-if(reduce){ for(let i=0;i<3;i++) ripple(.2+i*.3,.6,.6); for(let i=0;i<40;i++) step(); frame(performance.now(),true); }
-else startLoop();
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&visible&&!reduce) startLoop(); });
+if(reduce) frame(performance.now(),true); else startLoop();
 
 setAccent(root.getAttribute("data-accent")||"pacific",false);
 })();

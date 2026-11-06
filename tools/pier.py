@@ -88,7 +88,7 @@ def path(d, cls):
     return f'<path class="{cls}" d="{" ".join(d)}"/>'
 
 svg = f'''<svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of the Huntington Beach pier with the merch shop at the end">
-<defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".22" stop-color="#fff"/><stop offset=".55" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>
+<defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff"/><stop offset=".38" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <mask id="pilMask" maskUnits="userSpaceOnUse" x="0" y="80" width="1000" height="110"><rect x="0" y="80" width="1000" height="110" fill="url(#sub)"/></mask></defs>
 <g mask="url(#pilMask)">{path(pil, "ink")}{path(pil_l, "ink-l")}</g>
 {path(main, "ink")}{path(light, "ink-l")}
