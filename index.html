@@ -143,6 +143,8 @@ h1 .u path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s .35s c
 #pier .pier-sign{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;fill:currentColor}
 #pier .stamp-rect{fill:var(--paper);stroke:var(--accent);stroke-width:1.2;vector-effect:non-scaling-stroke}
 #pier .stamp-text{font-family:var(--mono);font-size:6.4px;letter-spacing:.06em;fill:var(--accent);font-weight:600}
+.scene-clip{position:relative}
+.scene-inner{position:relative}
 .water-wrap{position:relative;margin-top:-10%}
 .water{
   position:relative;width:100%;aspect-ratio:1000/132;min-height:0;cursor:grab;touch-action:pan-y;outline-offset:6px;
@@ -341,7 +343,9 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   .hero-row,.drop-grid,.reserve{grid-template-columns:1fr;gap:36px}
   .hero-note{position:relative;right:auto;top:auto;margin-top:22px;margin-left:56px}
   .hero-note .arrow{left:-52px;top:-30px;transform:scaleY(-1)}
-  .water{aspect-ratio:3.2/1;min-height:0}
+  .scene-clip{overflow:hidden;margin-right:calc(-1 * var(--pad-r));
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%);mask-image:linear-gradient(90deg,transparent,#000 9%)}
+  .scene-inner{width:230%;margin-left:-130%}
   .stats{grid-template-columns:1fr;gap:14px}
   .stat:nth-child(n){transform:none}
   .timeline{grid-template-columns:1fr;gap:34px;padding-left:34px}
@@ -423,6 +427,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
 
     <!-- ===== PIER + WATER ===== -->
     <figure class="scene" style="margin-left:0;margin-right:0">
+      <div class="scene-clip" id="sceneClip"><div class="scene-inner">
       <svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of the Huntington Beach pier with the merch shop at the end">
 <defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".07" stop-color="#fff"/><stop offset=".11" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <mask id="pilMask" maskUnits="userSpaceOnUse" x="0" y="80" width="1000" height="110"><rect x="0" y="80" width="1000" height="110" fill="url(#sub)"/></mask></defs>
@@ -439,8 +444,9 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
         <canvas id="sea"></canvas>
       </div>
       </div>
+      </div></div>
       <figcaption class="fig">
-        <span>fig. 1 — eye level with the lineup. drag across the water to push a wave; the surfers go with it.</span>
+        <span>fig. 1 — you're in the lineup. drag across the water to push a wave; the surfers go with it.</span>
         <span>waves made: <b id="waveCount">0</b> · rides caught: <b id="rideCount">0</b></span>
       </figcaption>
     </figure>
@@ -901,7 +907,8 @@ function layout(){
   const px=v=>pr.left+sx+v*s, py=v=>pr.top+sy+v*s;
   const wr=document.querySelector(".wrap").getBoundingClientRect();
   const lineX=wr.left+sx+parseFloat(getComputedStyle(root).getPropertyValue("--line-x"));
-  const shopX=px(895), deckY=py(71), leftX=px(30);
+  const clipL=$("#sceneClip").getBoundingClientRect().left+sx;
+  const shopX=px(895), deckY=py(71), leftX=Math.max(px(30), clipL+10);
   const drop=Math.max(70, Math.min(120, 150*s));
   const My=deckY+drop;
   const foot=document.querySelector("footer").getBoundingClientRect();
@@ -960,7 +967,7 @@ layout();
 const wEl=$("#water"), cv=$("#sea"), cx=cv.getContext("2d");
 const N=240;
 let R=new Float32Array(N), Lw=new Float32Array(N), buf=new Float32Array(N);
-let W=1, H=1, DPR=1, cell=1, restY=1, k=1, sk=1, maxA=1, time=0, waves=0, rides=0, visible=true, running=false;
+let visL=0, W=1, H=1, DPR=1, cell=1, restY=1, k=1, sk=1, maxA=1, time=0, waves=0, rides=0, visible=true, running=false;
 const PILES=[]; for(let x=48;x<985;x+=44) PILES.push(x);
 const PILE_J=PILES.map(()=>Math.random()*3-1.5);
 const C=0.2;            // wave speed, px per ms (times k)
@@ -985,12 +992,14 @@ function resize(){
   cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
   cell=W/(N-1); restY=W*.057; maxA=restY*.8;
   k=Math.max(.7,Math.min(1.3,W/820)); sk=Math.max(.3,W/1000*.6);
-  if(W<600){ // phones: sit the water lower and cap the waves so surfers stay under the deck
-    restY=W*.11;
-    maxA=Math.max(6, restY - 38*sk - 6*k - 5);
-  }
-  surfers.forEach((s,i)=>{ s.off=W<600&&(i===1||i===3);
-    s.home=s.hf*W; if(!s.x) s.x=s.home; s.x=Math.min(s.x,W*.96); });
+  // phones show only the shop end of a desktop-scale scene: keep the surfers in that window
+  const clip=$("#sceneClip").getBoundingClientRect();
+  visL=Math.max(0,Math.min(.9,(clip.left-r.left)/W));
+  const crop=visL>.05;
+  surfers.forEach((s,i)=>{ s.off=crop&&(i===1||i===3);
+    s.home=(visL+(crop?.08:0)+s.hf*(1-visL-(crop?.08:0)))*W;
+    if(!s.x||crop!==s.crop) s.x=s.home; s.crop=crop;
+    s.x=Math.max(W*(visL+.04),Math.min(s.x,W*.96)); });
 }
 
 /* --- wave field: a right-moving part (R) and a left-moving part (Lw), surface = both added --- */
@@ -1021,7 +1030,7 @@ function updateSurfers(dt){
     s.vx*=Math.pow(.986,f);
     if(!reduce) s.vx+=(s.home-s.x)*.0000022*dt;
     s.x+=s.vx*dt;
-    if(s.x<W*.04){ s.x=W*.04; s.vx=Math.abs(s.vx)*.15; }
+    if(s.x<W*(visL+.04)){ s.x=W*(visL+.04); s.vx=Math.abs(s.vx)*.15; }
     if(s.x>W*.96){ s.x=W*.96; s.vx=-Math.abs(s.vx)*.15; }
     const riding=Math.abs(r-l)>12*k && Math.abs(s.vx)>.04*k;
     if(riding){ if(!s.standing){ s.standing=true; rides++; $("#rideCount").textContent=rides; } s.linger=650; s.dir=s.vx>0?1:-1; }
