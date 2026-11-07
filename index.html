@@ -110,7 +110,7 @@ p{max-width:66ch}
 .kicker .live{display:inline-flex;align-items:center;gap:7px;color:var(--accent)}
 .kicker .live i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent-line);animation:pulse 2.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent-line)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
-h1{font-size:clamp(52px,10.2vw,148px);line-height:.9;letter-spacing:-.055em;font-weight:680;margin:22px 0 0;max-width:12ch}
+h1{font-size:clamp(52px,7.6vw,132px);line-height:.9;letter-spacing:-.055em;font-weight:680;margin:22px 0 0;max-width:none}
 h1 .u{position:relative;white-space:nowrap;display:inline-block}
 h1 .u svg{position:absolute;left:-2%;width:104%;bottom:-.16em;height:.26em;overflow:visible;color:var(--accent)}
 h1 .u path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s .35s cubic-bezier(.6,.1,.2,1) forwards}
@@ -330,6 +330,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   .about > :first-child{grid-column:1 / -1}
 }
 @media (max-width:760px){
+  h1 br{display:none}
   :root{--line-x:15px;--pad-l:40px;--pad-r:18px}
   body{font-size:16px}
   .top-in{padding:10px var(--pad-r) 10px 14px;gap:10px}
@@ -406,7 +407,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   <!-- ===== HERO ===== -->
   <section class="hero" aria-labelledby="h1">
     <div class="kicker"><span>Field note No. 02</span><span>·</span><span>Huntington Beach, CA</span><span>·</span><span class="live" id="liveBadge"><i></i><span id="liveText">Pre-orders open</span></span></div>
-    <h1 id="h1">We sold out once. Let's do it <span class="u">again.<svg viewBox="0 0 200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15C40 7 92 5 197 9C150 12 96 15 34 21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></span></h1>
+    <h1 id="h1">Drop 01 sold out,<br> let’s <span class="u">run<svg viewBox="0 0 200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15C40 7 92 5 197 9C150 12 96 15 34 21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></span> it&nbsp;back</h1>
 
     <div class="hero-row">
       <p class="lede">Drop 02 is our second-ever Huntington Run Club merch drop, and this time we made it with <strong>lululemon</strong>. Pre-orders run all of November: pick your piece and size, pay through Venmo, and we'll text you when it's ready to pick up.</p>
