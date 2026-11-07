@@ -479,23 +479,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
   <!-- ===== 02 DROP ===== -->
   <section class="sec" id="drop-details">
     <div class="sec-head"><span class="sec-num">02</span><h2 data-ring>Drop 02 × lululemon</h2><span class="aside">what we can tell you right now</span></div>
-    <div class="drop-grid">
-      <div>
-        <p class="lede">Round two had to be better than a good shirt. So we teamed up with lululemon to make something you'll actually run in, not just wear to brunch after.</p>
-        <p>It's pre-order only. We'll make what you order and nothing extra, so if you want one, November is the window. When orders close, we'll send the final size count to production and we wait (impatiently).</p>
-        <p class="margin-q">Two pieces this time: a men's sleeveless and a women's tank, both lululemon, both with our print. Mockups below.</p>
-      </div>
-      <dl class="spec">
-        <div class="spec-row"><dt>Made with</dt><dd>lululemon</dd></div>
-        <div class="spec-row"><dt>The piece</dt><dd id="specItem"></dd></div>
-        <div class="spec-row"><dt>Price</dt><dd id="specPrice"></dd></div>
-        <div class="spec-row"><dt>Sizes</dt><dd id="specSizes"></dd></div>
-        <div class="spec-row"><dt>Pre-orders</dt><dd>Nov 1 – Nov 30, 2026</dd></div>
-        <div class="spec-row"><dt>Pay with</dt><dd>Venmo · <span class="mono" id="specVenmo"></span></dd></div>
-        <div class="spec-row"><dt>Pickup</dt><dd>At a club run in HB. We'll text you.</dd></div>
-      </dl>
-    </div>
-    <div class="pieces" id="pieces"></div>
+    <div class="pieces" id="pieces" style="margin-top:0"></div>
   </section>
 
   <hr class="rule">
@@ -726,10 +710,6 @@ const handle = CONFIG.venmoHandle.replace(/^@/,"");
 const money = n => "$" + (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,"");
 const STY = id => CONFIG.styles.find(x=>x.id===id) || null;
 const priceOf = st => st && st.price ? st.price : null;
-$("#specItem").textContent = CONFIG.styles.map(st=>st.label+" "+st.chip.replace(st.label+" ","")).join(" + ");
-$("#specPrice").innerHTML = CONFIG.styles.every(st=>!st.price) ? 'Announced soon <span class="tbd">TBA</span>'
-  : CONFIG.styles.map(st=>escapeHtml(st.label)+" "+(st.price?money(st.price):"TBA")).join(" · ");
-$("#specSizes").textContent = CONFIG.styles.map(st=>st.label+" "+st.sizes[0]+"–"+st.sizes[st.sizes.length-1]).join(" · ");
 
 /* ---------- the two pieces ---------- */
 const SKETCH = {
@@ -766,7 +746,6 @@ CONFIG.styles.forEach((st,i)=>{
   a.querySelector(".btn").addEventListener("click",()=>{ selectStyle(st.id); $("#reserve").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"}); });
   piecesEl.appendChild(a);
 });
-$("#specVenmo").textContent = "@" + handle;
 $("#slipTo").textContent = "@" + handle;
 $("#venmoHandle").textContent = "@" + handle + " ↗";
 $("#venmoLink").href = "https://venmo.com/" + encodeURIComponent(handle);
