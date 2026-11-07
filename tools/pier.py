@@ -87,7 +87,7 @@ for (bx, by, s) in ((110, 22, 1), (128, 15, .8), (690, 12, .9)):
 def path(d, cls):
     return f'<path class="{cls}" d="{" ".join(d)}"/>'
 
-svg = f'''<svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of the Huntington Beach pier with the merch shop at the end">
+svg = f'''<svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of the Huntington Beach pier with the HRC shop at the end">
 <defs><linearGradient id="sub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".07" stop-color="#fff"/><stop offset=".11" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <mask id="pilMask" maskUnits="userSpaceOnUse" x="0" y="80" width="1000" height="110"><rect x="0" y="80" width="1000" height="110" fill="url(#sub)"/></mask></defs>
 <g mask="url(#pilMask)">{path(pil, "ink")}{path(pil_l, "ink-l")}</g>{path(brace, "ink-l")}
@@ -95,7 +95,7 @@ svg = f'''<svg id="pier" viewBox="0 0 1000 190" role="img" aria-label="Sketch of
 {"".join(f'<circle cx="{x}" cy="31.5" r="2" class="acc-fill"/>' for x in lamps)}
 {"".join(f'<circle cx="{x}" cy="{y}" r="3" class="ink paper-fill"/>' for x, y in heads)}
 <path d="M895 2L909 5.5L895 9Z" class="acc-fill"/>
-<text x="895" y="38" text-anchor="middle" class="pier-sign">SHOP</text>
+<text x="895" y="38" text-anchor="middle" class="pier-sign">HRC</text>
 <g transform="rotate(-5 812 112)"><path class="ink-l" d="M806 70L810 104"/><rect x="779" y="104" width="64" height="16" rx="1.5" class="stamp-rect"/><text x="811" y="115" text-anchor="middle" class="stamp-text">DROP 02 · OPEN</text></g>
 </svg>'''
 
