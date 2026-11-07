@@ -6,7 +6,7 @@
 <title>Huntington Run Club — Drop 02</title>
 <meta name="description" content="Huntington Run Club's second merch drop, made with lululemon. Pre-orders open all November.">
 <script>
-(function(){var d=document.documentElement,t=null,a=null,ok=['pacific','sunset','kelp','plum','indigo','sand'];
+(function(){var d=document.documentElement,t=null,a=null,ok=['pacific','kelp','sand'];
 try{t=localStorage.getItem('hrc-theme');a=localStorage.getItem('hrc-accent')}catch(e){}
 if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
 d.setAttribute('data-theme',t);d.setAttribute('data-accent',ok.indexOf(a)>-1?a:'pacific')})();
@@ -17,10 +17,7 @@ d.setAttribute('data-theme',t);d.setAttribute('data-accent',ok.indexOf(a)>-1?a:'
 <style>
 /* ---------- palettes (light / dark accent values) ---------- */
 [data-accent=pacific]{--a-l:#0a6b8f;--a-d:#5cc8ec}
-[data-accent=sunset] {--a-l:#b8430f;--a-d:#ff9a5c}
 [data-accent=kelp]   {--a-l:#3d7533;--a-d:#8fd47f}
-[data-accent=plum]   {--a-l:#8b2f6e;--a-d:#ec93cf}
-[data-accent=indigo] {--a-l:#3a42b0;--a-d:#9aa4ff}
 [data-accent=sand]   {--a-l:#8a6516;--a-d:#e6c172}
 
 :root{
@@ -672,8 +669,7 @@ const store = {
 
 /* ---------- accent + theme ---------- */
 const PALETTES = [
-  ["pacific","Pacific","#0a6b8f","#5cc8ec"],["sunset","Sunset","#b8430f","#ff9a5c"],["kelp","Kelp","#3d7533","#8fd47f"],
-  ["plum","Plum","#8b2f6e","#ec93cf"],["indigo","Indigo","#3a42b0","#9aa4ff"],["sand","Sand","#8a6516","#e6c172"]
+  ["pacific","Pacific","#0a6b8f","#5cc8ec"],["kelp","Kelp","#3d7533","#8fd47f"],["sand","Sand","#8a6516","#e6c172"]
 ];
 const sw = $("#swatches");
 PALETTES.forEach(([id,name,l,d])=>{
