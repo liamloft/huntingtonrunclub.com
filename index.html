@@ -65,11 +65,14 @@ a{color:inherit}
 
 /* ---------- top bar ---------- */
 .top{
-  position:sticky; top:0; z-index:50; padding-top:env(safe-area-inset-top);
+  position:sticky; top:0; z-index:50;
   background:color-mix(in srgb,var(--paper) 84%,transparent);
   backdrop-filter:saturate(1.2) blur(10px); -webkit-backdrop-filter:saturate(1.2) blur(10px);
   border-bottom:1px solid var(--rule);
 }
+/* Only pad for the notch when the page really runs under the status bar (saved to home screen).
+   Chrome on iPhone reports a top safe-area inset inside the browser too, which made the bar thick. */
+@media (display-mode: standalone), (display-mode: fullscreen){ .top{padding-top:env(safe-area-inset-top)} }
 .top-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px var(--pad-r) 12px 24px}
 .brand{display:flex;align-items:center;text-decoration:none;flex-shrink:0;transition:opacity .2s}
 .brand:hover{opacity:.75}
