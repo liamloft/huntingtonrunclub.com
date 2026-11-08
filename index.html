@@ -577,7 +577,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
       <details><summary>Why pre-order instead of just selling them?</summary><p>So we make exactly what people want. No guessing sizes, no leftover boxes, and every piece already has an owner.</p></details>
       <details><summary>What if I forgot my name or phone in the Venmo note?</summary><p>No stress. DM us on Instagram at @huntingtonrunclub with the name on your Venmo and your size, and we'll match it up.</p></details>
       <details><summary>Can I change my size?</summary><p>Yes, up until orders lock on Nov 30. Send us a message and we'll update it.</p></details>
-      <details><summary>How does sizing run?</summary><p>The men's sleeveless has a relaxed fit, with extra room in the chest and waist. The women's Align tank is snug and cropped, and reviewers say it runs true to size. Each product page on lululemon has a size guide. Still between sizes? Ask in the DMs and we'll help you pick.</p></details>
+      <details><summary>How does sizing run?</summary><p>The men's Metal Vent Tech tee has a slim fit that skims the body from chest to waist, and reviewers say it runs true to size. The women's Align tank is snug and cropped, and reviewers say it runs true to size. Each product page on lululemon has a size guide. Still between sizes? Ask in the DMs and we'll help you pick.</p></details>
       <details><summary>Do you ship?</summary><p>Pickup is at a club run in Huntington Beach. If you can't make it, message us and we'll figure something out.</p></details>
       <details><summary>Can I order for a friend?</summary><p>Of course. Bump the quantity, or place a separate order with their name and size so we don't mix them up.</p></details>
     </div>
@@ -631,13 +631,13 @@ const CONFIG = {
   // The two pieces. price: e.g. 48 (null = amount left blank in Venmo).
   // image: put your render in the repo's assets/ folder with this name and it shows up automatically.
   styles: [
-    { id:"mens", label:"Men's", chip:"Men's sleeveless",
-      name:"EasySet Training Sleeveless Shirt", color:"Black",
-      sizes:["XS","S","M","L","XL","XXL","3XL"], price:null,
-      fit:"Relaxed fit with extra room in the chest and waist. Light, stretchy recycled-poly blend.",
-      fabric:"Recycled polyester, lyocell, Lycra",
+    { id:"mens", label:"Men's", chip:"Men's tee",
+      name:"Metal Vent Tech Short-Sleeve Shirt", color:null,
+      sizes:["XS","S","M","L","XL","XXL"], price:null,
+      fit:"Slim fit that skims the body from chest to waist. Seamless, so nothing chafes on long runs.",
+      fabric:"Nylon, recycled polyester, elastane, X-Static anti-odor",
       image:"assets/drop02-mens.png",
-      url:"https://shop.lululemon.com/p/easyset-training-sleeveless-shirt-graphic/vtyhs4myy6?fp=1&color=0001" },
+      url:"https://shop.lululemon.com/p/metal-vent-tech-short-sleeve-shirt-3/lbhe17vi2f?color=4780" },
     { id:"womens", label:"Women's", chip:"Women's Align tank",
       name:"lululemon Align\u2122 Tank Top", color:null,
       sizes:["0","2","4","6","8","10","12","14","16","18","20"], price:null,
@@ -721,10 +721,10 @@ const priceOf = st => st && st.price ? st.price : null;
 /* ---------- the two pieces ---------- */
 const SKETCH = {
   mens:`<svg class="sketch" viewBox="0 0 200 240" aria-hidden="true">
-    <path class="ink" d="M58 22L72 17Q100 40 128 17L142 22C137 58 146 82 153 96L151 222Q100 229 49 222L47 96C54 82 63 58 58 22Z"/>
-    <path class="ink-l" d="M73 20Q100 46 127 20"/><path class="ink-l" d="M60 26C56 60 62 84 52 98"/><path class="ink-l" d="M140 26C144 60 138 84 148 98"/>
-    <path class="ink-l" d="M50 214Q100 221 150 214"/>
-    <path class="acc" d="M108 74c4-4 8-4 12 0s8 4 12 0"/><text x="120" y="88" text-anchor="middle">HRC</text></svg>`,
+    <path class="ink" d="M78 20Q100 36 122 20L150 30L178 72L158 86L150 74L149 222Q100 229 51 222L50 74L42 86L22 72L50 30Z"/>
+    <path class="ink-l" d="M80 23Q100 41 120 23"/><path class="ink-l" d="M173 64L154 79"/><path class="ink-l" d="M27 64L46 79"/>
+    <path class="ink-l" d="M52 214Q100 221 148 214"/>
+    <path class="acc" d="M108 72c4-4 8-4 12 0s8 4 12 0"/><text x="120" y="86" text-anchor="middle">HRC</text></svg>`,
   womens:`<svg class="sketch" viewBox="0 0 200 240" aria-hidden="true">
     <path class="ink" d="M66 30L77 30C80 66 120 66 123 30L134 30C136 66 147 84 151 104L149 194Q100 202 51 194L49 104C53 84 64 66 66 30Z"/>
     <path class="ink-l" d="M79 33C83 70 117 70 121 33"/><path class="ink-l" d="M54 160Q100 168 146 160"/>
