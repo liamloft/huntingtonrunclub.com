@@ -1,6 +1,6 @@
 # huntingtonrunclub.com
 
-Huntington Run Club's site. First up: the Drop 02 merch pre-order page (made with lululemon, pre-orders open Nov 1 – Fri, Dec 11, 2026).
+Huntington Run Club's site. First up: the Drop 02 merch pre-order page (made with lululemon, pre-orders open Sun, Nov 22 – Fri, Dec 11, 2026).
 
 ## What's here
 
