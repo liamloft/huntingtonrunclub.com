@@ -543,7 +543,7 @@ footer .wave-foot{width:100%;height:40px;color:var(--accent-line);display:block;
         <p class="to" id="slipTo"></p>
         <div class="row"><span>amount</span><span class="val" id="slipAmt"></span></div>
         <div class="row"><span>note</span><span class="val" id="slipNote"></span></div>
-        <div class="row"><span>privacy</span><span class="val">Private, so your number stays off the public feed</span></div>
+        <div class="row"><span>privacy</span><span class="val">Private</span></div>
         <div class="slip-actions">
           <a class="btn" id="venmoBtn" href="#" target="_blank" rel="noopener" aria-disabled="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l3.5 15L19 5"/></svg>
@@ -848,7 +848,7 @@ function render(){
   nEl.textContent = note;
   nEl.classList.toggle("empty", !ok);
   const pr=priceOf(STY(state.style));
-  $("#slipAmt").textContent = pr ? money(pr*state.qty) + "  (" + state.qty + " × " + money(pr) + ")" : "set when the price drops";
+  $("#slipAmt").textContent = pr ? money(pr*state.qty) + "  (" + state.qty + " × " + money(pr) + ")" : "set when you select your swag";
   const btn = $("#venmoBtn");
   btn.href = venmoUrl(note, state.qty);
   btn.setAttribute("aria-disabled", ok ? "false":"true");
