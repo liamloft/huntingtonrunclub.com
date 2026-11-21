@@ -199,7 +199,7 @@ h1 .u path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s .35s c
 .piece:nth-child(1){transform:rotate(-.4deg)}.piece:nth-child(2){transform:rotate(.4deg)}
 .piece:nth-child(1):hover{transform:translateY(-3px) rotate(-.6deg)}.piece:nth-child(2):hover{transform:translateY(-3px) rotate(.6deg)}
 .render{position:relative;aspect-ratio:1/1;background-color:var(--paper-2);background-image:radial-gradient(var(--dot) 1px,transparent 1.3px);background-size:16px 16px;display:grid;place-items:center;border-bottom:1px solid var(--rule)}
-.render img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.render img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .4s}
 .render.has-img img{opacity:1}
 .render.has-img .sketch,.render.has-img .stamp{display:none}
 .render .sketch{width:50%;height:auto;color:var(--ink);overflow:visible}
@@ -626,14 +626,14 @@ const CONFIG = {
       sizes:["XS","S","M","L","XL","XXL"], price:78,
       fit:"Slim fit that skims the body from chest to waist. Seamless, so nothing chafes on long runs.",
       fabric:"Nylon, recycled polyester, elastane, X-Static anti-odor",
-      image:"assets/drop02-mens.png",
+      image:"assets/drop02-mens.webp",
       url:"https://shop.lululemon.com/p/metal-vent-tech-short-sleeve-shirt-3/lbhe17vi2f?color=4780" },
     { id:"womens", label:"Women's", chip:"Women's racerback tank",
       name:"lululemon Align\u2122 Waist-Length Racerback Tank Top", color:"Black",
       sizes:["0","2","4","6","8","10","12","14","16","18","20"], price:58,
       fit:"Tight fit that hits at the waist, with a racerback cut. Buttery-soft, sweat-wicking Nulu fabric.",
       fabric:"Nulu\u2122 (nylon, Lycra)",
-      image:"assets/drop02-womens.png",
+      image:"assets/drop02-womens.webp",
       url:"https://shop.lululemon.com/p/align-waistlength-racerback-tank/qwkov3k9c1?color=0001" }
   ],
   maxQty: 5,
